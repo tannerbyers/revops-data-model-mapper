@@ -1,0 +1,322 @@
+import type { ToolDefinition } from "../types";
+
+export const outreach: ToolDefinition = {
+  id: "outreach",
+  name: "Outreach",
+  category: "sales-engagement",
+  description:
+    "Outreach is a sales engagement platform focused on multi-channel sequences, call tracking, and meeting scheduling. It integrates deeply with CRMs to sync activity data.",
+  officialDocsUrl: "https://developer.outreach.io/api/reference",
+  notes: [
+    "Outreach is primarily a sequence/engagement tool that syncs activity back to a CRM.",
+    "It does not replace a CRM; it operates alongside Salesforce, HubSpot, etc.",
+    "Prospect and Account data is typically synced from a connected CRM.",
+  ],
+  objects: [
+    {
+      id: "or_account",
+      toolObjectName: "Account",
+      canonicalObjectId: "account",
+      description: "Organization record synced from CRM or created in Outreach",
+      confidence: "high",
+      aliases: ["Organization", "Company"],
+      fields: [
+        {
+          toolFieldName: "name",
+          canonicalFieldId: "account_name",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "website",
+          canonicalFieldId: "account_website",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "industry",
+          canonicalFieldId: "account_industry",
+          type: "string",
+          confidence: "medium",
+          notes: "If synced from CRM; may not be editable in Outreach",
+        },
+        {
+          toolFieldName: "ownerId",
+          canonicalFieldId: "account_owner",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "phone",
+          canonicalFieldId: "account_phone",
+          type: "string",
+          confidence: "medium",
+        },
+        {
+          toolFieldName: "createdAt",
+          canonicalFieldId: "account_created_date",
+          type: "datetime",
+          confidence: "high",
+        },
+      ],
+      relationships: [
+        {
+          targetToolObjectName: "Prospect",
+          canonicalRelationshipId: "account_has_contacts",
+          relationshipType: "one-to-many",
+          confidence: "high",
+        },
+      ],
+      notes: [
+        "Account data is typically synced from the connected CRM.",
+        "Account enrichment may be limited compared to Apollo.",
+      ],
+    },
+    {
+      id: "or_prospect",
+      toolObjectName: "Prospect",
+      canonicalObjectId: "contact",
+      description: "Individual contact for outreach and engagement",
+      confidence: "high",
+      aliases: ["Contact", "Person"],
+      fields: [
+        {
+          toolFieldName: "firstName",
+          canonicalFieldId: "contact_first_name",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "lastName",
+          canonicalFieldId: "contact_last_name",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "email",
+          canonicalFieldId: "contact_email",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "phone",
+          canonicalFieldId: "contact_phone",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "title",
+          canonicalFieldId: "contact_job_title",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "accountId",
+          canonicalFieldId: "contact_account_id",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "ownerId",
+          canonicalFieldId: "contact_owner",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "createdAt",
+          canonicalFieldId: "contact_created_date",
+          type: "datetime",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "lastActivityAt",
+          canonicalFieldId: "contact_last_activity_date",
+          type: "datetime",
+          confidence: "high",
+        },
+      ],
+      relationships: [
+        {
+          targetToolObjectName: "Account",
+          canonicalRelationshipId: "contact_belongs_to_account",
+          relationshipType: "many-to-one",
+          confidence: "high",
+        },
+        {
+          targetToolObjectName: "Opportunity",
+          canonicalRelationshipId: "contact_has_activities",
+          relationshipType: "one-to-many",
+          confidence: "high",
+          notes: "Sequence activities are logged against prospects",
+        },
+      ],
+      notes: [
+        "Outreach calls individuals 'Prospects' rather than Contacts.",
+        "Prospects are typically synced from a connected CRM.",
+      ],
+    },
+    {
+      id: "or_opportunity",
+      toolObjectName: "Opportunity",
+      canonicalObjectId: "opportunity",
+      description: "Deal record synced from CRM",
+      confidence: "medium",
+      aliases: ["Deal"],
+      fields: [
+        {
+          toolFieldName: "name",
+          canonicalFieldId: "opportunity_name",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "amount",
+          canonicalFieldId: "opportunity_amount",
+          type: "number",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "stage",
+          canonicalFieldId: "opportunity_stage",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "closeDate",
+          canonicalFieldId: "opportunity_close_date",
+          type: "datetime",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "accountId",
+          canonicalFieldId: "opportunity_account_id",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "ownerId",
+          canonicalFieldId: "opportunity_owner",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "createdAt",
+          canonicalFieldId: "opportunity_created_date",
+          type: "datetime",
+          confidence: "high",
+        },
+      ],
+      relationships: [
+        {
+          targetToolObjectName: "Account",
+          canonicalRelationshipId: "opportunity_belongs_to_account",
+          relationshipType: "many-to-one",
+          confidence: "high",
+        },
+      ],
+      notes: [
+        "Opportunity data is typically synced from CRM; native creation is limited.",
+        "Outreach focuses on engagement activity rather than pipeline management.",
+      ],
+    },
+    {
+      id: "or_sequence",
+      toolObjectName: "Sequence",
+      canonicalObjectId: "campaign",
+      description: "Outreach sequence or cadence for automated engagement",
+      confidence: "high",
+      aliases: ["Cadence", "Campaign", "Automation"],
+      fields: [
+        {
+          toolFieldName: "name",
+          canonicalFieldId: "campaign_name",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "status",
+          canonicalFieldId: "campaign_status",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "createdAt",
+          canonicalFieldId: "campaign_start_date",
+          type: "datetime",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "ownerId",
+          canonicalFieldId: "campaign_owner",
+          type: "string",
+          confidence: "high",
+        },
+      ],
+      relationships: [
+        {
+          targetToolObjectName: "Prospect",
+          canonicalRelationshipId: "campaign_has_leads",
+          relationshipType: "one-to-many",
+          confidence: "high",
+        },
+      ],
+      notes: [
+        "Outreach sequences are multi-channel (email, call, LinkedIn).",
+        "Sequence steps create activity records that sync back to the CRM.",
+      ],
+    },
+    {
+      id: "or_user",
+      toolObjectName: "User",
+      canonicalObjectId: "user",
+      description: "Outreach user with access to the platform",
+      confidence: "medium",
+      aliases: ["Sales Rep"],
+      fields: [
+        {
+          toolFieldName: "name",
+          canonicalFieldId: "user_name",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "email",
+          canonicalFieldId: "user_email",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "isActive",
+          canonicalFieldId: "user_is_active",
+          type: "boolean",
+          confidence: "high",
+        },
+      ],
+      relationships: [
+        {
+          targetToolObjectName: "Account",
+          canonicalRelationshipId: "user_owns_accounts",
+          relationshipType: "one-to-many",
+          confidence: "high",
+        },
+        {
+          targetToolObjectName: "Prospect",
+          canonicalRelationshipId: "user_owns_contacts",
+          relationshipType: "one-to-many",
+          confidence: "high",
+        },
+      ],
+      notes: [
+        "User roles in Outreach are simpler than CRM user models.",
+        "Outreach users typically correspond to sales team members.",
+      ],
+    },
+  ],
+};

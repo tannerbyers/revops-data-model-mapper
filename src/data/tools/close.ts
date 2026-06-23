@@ -1,0 +1,320 @@
+import type { ToolDefinition } from "../types";
+
+export const close: ToolDefinition = {
+  id: "close",
+  name: "Close",
+  category: "crm",
+  description:
+    "Close is a CRM built for sales communication with built-in calling, email, and SMS. It emphasizes activity logging and communication-driven sales workflows.",
+  officialDocsUrl: "https://developer.close.com/",
+  notes: [
+    "Close is a communication-centric CRM with native calling, email, and SMS.",
+    "The data model is simpler than Salesforce; leads and contacts are combined concepts.",
+    "Close uses 'Lead' as its primary person object, which maps to either Contact or Lead depending on context.",
+  ],
+  objects: [
+    {
+      id: "cl_lead",
+      toolObjectName: "Lead",
+      canonicalObjectId: "contact",
+      description:
+        "Individual person or prospect record; serves as both Contact and Lead",
+      confidence: "high",
+      aliases: ["Person", "Contact", "Prospect"],
+      fields: [
+        {
+          toolFieldName: "name",
+          canonicalFieldId: "contact_first_name",
+          type: "string",
+          confidence: "low",
+          notes: "Close uses single 'name' field, not separated first/last",
+        },
+        {
+          toolFieldName: "name",
+          canonicalFieldId: "contact_last_name",
+          type: "string",
+          confidence: "low",
+          notes: "Name is a single field; splitting may require parsing",
+        },
+        {
+          toolFieldName: "email",
+          canonicalFieldId: "contact_email",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "phone",
+          canonicalFieldId: "contact_phone",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "title",
+          canonicalFieldId: "contact_job_title",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "created_by_name",
+          canonicalFieldId: "contact_owner",
+          type: "string",
+          confidence: "medium",
+          notes: "Close tracks created_by but ownership is less formal",
+        },
+        {
+          toolFieldName: "date_created",
+          canonicalFieldId: "contact_created_date",
+          type: "datetime",
+          confidence: "high",
+        },
+      ],
+      relationships: [
+        {
+          targetToolObjectName: "Organization",
+          canonicalRelationshipId: "contact_belongs_to_account",
+          relationshipType: "many-to-one",
+          confidence: "high",
+        },
+      ],
+      notes: [
+        "Close uses Lead as the core person object rather than separate Lead and Contact.",
+        "Name is a single string field; first/last name splitting may be needed.",
+        "Multiple contacts at the same company are linked via the Organization.",
+      ],
+    },
+    {
+      id: "cl_organization",
+      toolObjectName: "Organization",
+      canonicalObjectId: "account",
+      description: "Company or organization record",
+      confidence: "high",
+      aliases: ["Company", "Account"],
+      fields: [
+        {
+          toolFieldName: "name",
+          canonicalFieldId: "account_name",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "url",
+          canonicalFieldId: "account_website",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "phone",
+          canonicalFieldId: "account_phone",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "created_by_name",
+          canonicalFieldId: "account_owner",
+          type: "string",
+          confidence: "medium",
+        },
+        {
+          toolFieldName: "date_created",
+          canonicalFieldId: "account_created_date",
+          type: "datetime",
+          confidence: "high",
+        },
+      ],
+      relationships: [
+        {
+          targetToolObjectName: "Lead",
+          canonicalRelationshipId: "account_has_contacts",
+          relationshipType: "one-to-many",
+          confidence: "high",
+        },
+        {
+          targetToolObjectName: "Opportunity",
+          canonicalRelationshipId: "account_has_opportunities",
+          relationshipType: "one-to-many",
+          confidence: "high",
+        },
+      ],
+      notes: [
+        "Organization in Close is simpler than Account models in Salesforce/Dynamics.",
+        "Custom fields can be added for industry, revenue, and size data.",
+      ],
+    },
+    {
+      id: "cl_opportunity",
+      toolObjectName: "Opportunity",
+      canonicalObjectId: "opportunity",
+      description: "Sales deal or opportunity in pipeline",
+      confidence: "high",
+      aliases: ["Deal"],
+      fields: [
+        {
+          toolFieldName: "name",
+          canonicalFieldId: "opportunity_name",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "value",
+          canonicalFieldId: "opportunity_amount",
+          type: "number",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "status_type",
+          canonicalFieldId: "opportunity_stage",
+          type: "string",
+          confidence: "high",
+          notes: "close_won, close_lost, active, etc.",
+        },
+        {
+          toolFieldName: "date_won",
+          canonicalFieldId: "opportunity_close_date",
+          type: "datetime",
+          confidence: "medium",
+          notes: "Close uses date_won for won deals; expected close date may differ",
+        },
+        {
+          toolFieldName: "organization_id",
+          canonicalFieldId: "opportunity_account_id",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "created_by_name",
+          canonicalFieldId: "opportunity_owner",
+          type: "string",
+          confidence: "medium",
+        },
+        {
+          toolFieldName: "date_created",
+          canonicalFieldId: "opportunity_created_date",
+          type: "datetime",
+          confidence: "high",
+        },
+      ],
+      relationships: [
+        {
+          targetToolObjectName: "Organization",
+          canonicalRelationshipId: "opportunity_belongs_to_account",
+          relationshipType: "many-to-one",
+          confidence: "high",
+        },
+        {
+          targetToolObjectName: "Lead",
+          canonicalRelationshipId: "opportunity_has_contacts",
+          relationshipType: "many-to-many",
+          confidence: "high",
+        },
+      ],
+      notes: [
+        "Close opportunities track value and status but have simpler stage management.",
+        "Opportunity-Contact associations are less formal than Salesforce junction objects.",
+      ],
+    },
+    {
+      id: "cl_activity",
+      toolObjectName: "Activity",
+      canonicalObjectId: "activity",
+      description:
+        "Communication activities including calls, emails, SMS, and notes",
+      confidence: "high",
+      aliases: ["Call", "Email", "Note", "SMS"],
+      fields: [
+        {
+          toolFieldName: "type",
+          canonicalFieldId: "activity_type",
+          type: "string",
+          required: true,
+          confidence: "high",
+          notes: "Call, Email, Note, SMS, Meeting, etc.",
+        },
+        {
+          toolFieldName: "date",
+          canonicalFieldId: "activity_date",
+          type: "datetime",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "body_text",
+          canonicalFieldId: "activity_description",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "created_by_name",
+          canonicalFieldId: "activity_owner",
+          type: "string",
+          confidence: "high",
+        },
+        {
+          toolFieldName: "date_created",
+          canonicalFieldId: "activity_created_date",
+          type: "datetime",
+          confidence: "high",
+        },
+      ],
+      relationships: [
+        {
+          targetToolObjectName: "Lead",
+          canonicalRelationshipId: "activity_associated_to_contact",
+          relationshipType: "many-to-one",
+          confidence: "high",
+        },
+        {
+          targetToolObjectName: "Organization",
+          canonicalRelationshipId: "activity_associated_to_account",
+          relationshipType: "many-to-one",
+          confidence: "high",
+        },
+        {
+          targetToolObjectName: "Opportunity",
+          canonicalRelationshipId: "activity_associated_to_opportunity",
+          relationshipType: "many-to-one",
+          confidence: "high",
+        },
+      ],
+      notes: [
+        "Activities are central to Close's communication-driven CRM approach.",
+        "Native calling and email integration automatically log activities.",
+      ],
+    },
+    {
+      id: "cl_user",
+      toolObjectName: "User",
+      canonicalObjectId: "user",
+      description: "Close user with CRM access",
+      confidence: "medium",
+      aliases: ["Team Member"],
+      fields: [
+        {
+          toolFieldName: "name",
+          canonicalFieldId: "user_name",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "email",
+          canonicalFieldId: "user_email",
+          type: "string",
+          required: true,
+          confidence: "high",
+        },
+        {
+          toolFieldName: "is_active",
+          canonicalFieldId: "user_is_active",
+          type: "boolean",
+          confidence: "high",
+        },
+      ],
+      relationships: [],
+      notes: [
+        "Close user model is straightforward compared to enterprise CRMs.",
+        "User roles and permissions are available in higher-tier plans.",
+      ],
+    },
+  ],
+};
