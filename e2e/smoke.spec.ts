@@ -10,12 +10,12 @@ test.describe("RevOps Data Model Mapper smoke tests", () => {
     await page.goto("/");
     const select = page.locator("select").first();
     await select.selectOption("salesforce");
-    await expect(page.getByText("Salesforce")).toBeVisible();
+    // Verify the info badge shows the tool name
+    await expect(page.getByText(/Source: Salesforce/)).toBeVisible();
   });
 
   test("can navigate to compare page", async ({ page }) => {
     await page.goto("/");
-    // Click the Compare nav link
     await page.getByRole("link", { name: "Compare" }).click();
     await page.waitForURL("**/compare");
     await expect(page.locator("h1")).toContainText("Compare Tools");
@@ -29,17 +29,11 @@ test.describe("RevOps Data Model Mapper smoke tests", () => {
     await expect(page.locator("h2").first()).toBeVisible();
   });
 
-  test("can navigate to export page", async ({ page }) => {
+  test("can navigate to export page and generate content", async ({ page }) => {
     await page.goto("/");
-    // Use the mobile nav or desktop nav
     const exportLink = page.getByRole("link", { name: "Export" });
     await exportLink.click();
     await page.waitForURL("**/export");
-    await expect(page.locator("h1")).toContainText("Export Report");
-  });
-
-  test("export generates content", async ({ page }) => {
-    await page.goto("/export");
     await expect(page.locator("h1")).toContainText("Export Report");
 
     // Select tools and format, then generate
