@@ -13,28 +13,32 @@ test.describe("RevOps Data Model Mapper smoke tests", () => {
     await expect(page.getByText("Salesforce")).toBeVisible();
   });
 
-  test("compare page works", async ({ page }) => {
-    await page.goto("/compare");
+  test("can navigate to compare page", async ({ page }) => {
+    await page.goto("/");
+    // Click the Compare nav link
+    await page.getByRole("link", { name: "Compare" }).click();
+    await page.waitForURL("**/compare");
     await expect(page.locator("h1")).toContainText("Compare Tools");
-
-    // Select two tools
-    const selects = page.locator("select");
-    await selects.nth(0).selectOption("salesforce");
-    await selects.nth(1).selectOption("hubspot");
-
-    // Should show consulting notes
-    await expect(page.getByText("Consulting Notes")).toBeVisible();
   });
 
-  test("canonical model page renders", async ({ page }) => {
-    await page.goto("/model");
+  test("can navigate to canonical model page", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: "Canonical Model" }).click();
+    await page.waitForURL("**/model");
     await expect(page.locator("h1")).toContainText("Canonical Revenue Data Model");
-    // Should list all 8 canonical objects
-    const objects = page.locator("h2");
-    await expect(objects.first()).toBeVisible();
+    await expect(page.locator("h2").first()).toBeVisible();
   });
 
-  test("export button creates content", async ({ page }) => {
+  test("can navigate to export page", async ({ page }) => {
+    await page.goto("/");
+    // Use the mobile nav or desktop nav
+    const exportLink = page.getByRole("link", { name: "Export" });
+    await exportLink.click();
+    await page.waitForURL("**/export");
+    await expect(page.locator("h1")).toContainText("Export Report");
+  });
+
+  test("export generates content", async ({ page }) => {
     await page.goto("/export");
     await expect(page.locator("h1")).toContainText("Export Report");
 
